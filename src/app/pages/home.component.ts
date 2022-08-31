@@ -11,7 +11,7 @@ import { take } from 'rxjs/operators';
 export class Home implements OnInit {
   showLast30Days = false;
   exchangeRateDataSource: MatTableDataSource<any> = new MatTableDataSource();
-  exchangeRateTableColumns: string[] = ['date', 'open', 'close', 'hight', 'low', 'close_dif'];
+  exchangeRateTableColumns: string[] = ['date', 'open', 'close', 'high', 'low', 'close'];
   from_symbol: "";
   exchangeRate: any;
   constructor(
