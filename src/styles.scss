@@ -1,0 +1,57 @@
+@import '~@angular/material/theming';
+@include mat-core();
+$md-pallet: ( 50: #e1f6ff, 100: #b5e7fe, 200: #83d8fd, 300: #51c8fc, 400: #2cbcfc, 500: #07b0fb, 600: #06a9fa, 700: #05a0fa, 800: #0497f9, 900: #0287f8, A100: #ffffff, A200: #ebf5ff, A400: #b8dbff, A700: #9fceff, contrast: ( 50: #000000, 100: #000000, 200: #000000, 300: #000000, 400: #000000, 500: #000000, 600: #000000, 700: #ffffff, 800: #ffffff, 900: #ffffff, A100: #000000, A200: #000000, A400: #000000, A700: #000000, ));
+$md-pallet-2: ( 50: #e5e5e5, 100: #bebebe, 200: #939393, 300: #676767, 400: #474747, 500: #262626, 600: #222222, 700: #1c1c1c, 800: #171717, 900: #0d0d0d, A100: #eb6969, A200: #e53c3c, A400: #ee0000, A700: #d40000, contrast: ( 50: #000000, 100: #000000, 200: #000000, 300: #ffffff, 400: #ffffff, 500: #ffffff, 600: #ffffff, 700: #ffffff, 800: #ffffff, 900: #ffffff, A100: #000000, A200: #ffffff, A400: #ffffff, A700: #ffffff, ));
+$app-primary: mat-palette($md-pallet, 500);
+$app-accent: mat-palette($md-pallet-2);
+$app-theme: mat-light-theme(( color: ( primary: $app-primary, accent: $app-accent)));
+@include angular-material-theme($app-theme);
+:root {
+    --primary-color: #07B0FB;
+    --primary-color-100: #e1f6ff;
+    --theme-secondary-color: #4e4e4e;
+}
+
+body {
+    background-color: #F2F2F2;
+    padding: 0 15px 0 15px;
+    margin: 0;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+h1 {
+    font-style: normal;
+    font-weight: 700;
+    font-size: 24px;
+    line-height: 30px;
+    margin: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+.primary-btn {
+    border-radius: 100px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 5px 16px 4px 16px !important;
+    color: white !important;
+    width: 330px;
+    height: 48px;
+}
+
+.btn-large {
+    span {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 24px;
+    }
+}
+
+.mat-form-field-appearance-fill .mat-form-field-flex {
+    background-color: #F4F4F4 !important;
+}
