@@ -1,8 +1,13 @@
 .title {
-    color: #07B0FB;
     margin-top: 32px !important;
+    margin-bottom: 32px !important;
 }
 
 .btn-large {
     margin-top: 12px;
+}
+
+.plus-container{
+  display: flex;
+  cursor: pointer;
 }

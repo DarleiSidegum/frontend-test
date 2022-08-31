@@ -1,46 +1,128 @@
 <div>
-    <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; flex-direction: column;">
-        <h1 class="title">
-            BRL EXCHANGE RATE
-        </h1>
-        <div style="display: flex; flex-direction: column;">
-            <mat-form-field class="example-full-width" appearance="fill">
-                <mat-label>Enter the currency code</mat-label>
-                <input matInput>
-            </mat-form-field>
-            <button mat-flat-button color="primary" class="primary-btn btn-large">
-              <span>
-                EXCHANGE RESULT
-              </span>
-            </button>
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; flex-direction: column;">
+    <h1 class="text-brand-500 title">
+      BRL EXCHANGE RATE
+    </h1>
+    <div style="display: flex; flex-direction: column;">
+      <mat-form-field class="example-full-width" [(ngModel)]="from_symbol" ngDefaultControl appearance="fill">
+        <mat-label>Enter the currency code</mat-label>
+        <input matInput>
+      </mat-form-field>
+      <button mat-flat-button color="primary" class="primary-btn btn-large" (click)="getCurrentExchangeRate()">
+        <span>
+          EXCHANGE RESULT
+        </span>
+      </button>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-top: 2px solid #D9D9D9; padding-top: 30px;">
-                <div>
-                    <p>Exchange rate now</p>
-                    <p>09/03/2022 - 15h09</p>
-                </div>
-                <div>
-                    <h1>USD/BRL</h1>
-                </div>
-            </div>
-
-            <div style="background-color: var(--primary-color-100); display: flex; justify-content: center; align-items: center; padding: 16px 0 ;">
-                <h1 style="font-size: 32px;
-              line-height: 40px; font-weight: 700; color: var(--primary-color); margin: 0;">
-                    R$ 5,00
-                </h1>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-bottom: 2px solid var(--primary-color);">
-                <div>
-                    <p>Exchange rate now</p>
-                </div>
-                <div>
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.625 7.875H10.125V0.375C10.125 0.1875 9.9375 0 9.75 0H8.25C8.01562 0 7.875 0.1875 7.875 0.375V7.875H0.375C0.140625 7.875 0 8.0625 0 8.25V9.75C0 9.98438 0.140625 10.125 0.375 10.125H7.875V17.625C7.875 17.8594 8.01562 18 8.25 18H9.75C9.9375 18 10.125 17.8594 10.125 17.625V10.125H17.625C17.8125 10.125 18 9.98438 18 9.75V8.25C18 8.0625 17.8125 7.875 17.625 7.875Z" fill="#07B0FB"/>
-                    </svg>
-                </div>
-            </div>
+      <div *ngIf="exchangeRate != null">
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-top: 2px solid #D9D9D9; padding-top: 30px;">
+          <div>
+            <p class="lg-bold">Exchange rate now</p>
+            <p class="medium">{{exchangeRate?.lastUpdatedAt}}</p>
+          </div>
+          <div>
+            <h1 class="text-brand-500 uppercase">{{exchangeRate?.fromSymbol}}/{{exchangeRate?.toSymbol}}</h1>
+          </div>
         </div>
+        <div
+          style="background-color: var(--primary-color-100); display: flex; justify-content: center; align-items: center; padding: 16px 0 ; margin-top: 15px;">
+          <h1 style="font-size: 32px;
+                line-height: 40px; font-weight: 700; color: var(--primary-color); margin: 0;">
+            {{exchangeRate?.exchangeRate}}
+          </h1>
+        </div>
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px;">
+          <div>
+            <p class="default-bold">LAST 30 DAYS</p>
+          </div>
+          <div class="plus-container" (click)="getDailyExchangeRate()">
+            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:plus'" *ngIf="!showLast30Days"></mat-icon>
+            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:minus'" *ngIf="showLast30Days"></mat-icon>
+          </div>
+        </div>
+      </div>
     </div>
+    <!-- <div class="bg-gray-400 p-3">
+        <div class="p-4">
+          <div>07/03/2022</div>
+          <div>
+            <div></div>
+            <div></div>
+          </div>
+          <div></div>
+        </div>
+    </div> -->
+
+  </div>
+  <div class="bg-gray-400 p-3 mt-4" *ngIf="showLast30Days">
+    <div class="overflow-x-auto">
+      <table class="w-full bg-transparent" mat-table [dataSource]="exchangeRateDataSource" [trackBy]="trackByFn"
+        #exchangeRateTable>
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>
+            Date
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 font-medium text-sm text-secondary whitespace-nowrap">
+              {{exchange.date}}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="open">
+          <th mat-header-cell *matHeaderCellDef>
+            Open
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 whitespace-nowrap">
+              {{exchange.open}}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="close">
+          <th mat-header-cell *matHeaderCellDef>
+            Close
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 whitespace-nowrap">
+              {{exchange.close}}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="hight">
+          <th mat-header-cell *matHeaderCellDef>
+            Higth
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 whitespace-nowrap">
+              {{exchange.hight}}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="low">
+          <th mat-header-cell *matHeaderCellDef>
+            Low
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 whitespace-nowrap">
+              {{exchange.low}}
+            </span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="close_dif">
+          <th mat-header-cell *matHeaderCellDef>
+            Close Dif
+          </th>
+          <td mat-cell *matCellDef="let exchange">
+            <span class="pr-6 whitespace-nowrap">
+              {{exchange.close_dif}}
+            </span>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="exchangeRateTableColumns"></tr>
+        <tr class="order-row h-16" mat-row *matRowDef="let row; columns: exchangeRateTableColumns;"></tr>
+      </table>
+    </div>
+  </div>
 </div>
