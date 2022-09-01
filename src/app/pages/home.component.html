@@ -1,128 +1,163 @@
-<div>
-  <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; flex-direction: column;">
-    <h1 class="text-brand-500 title">
-      BRL EXCHANGE RATE
-    </h1>
-    <div style="display: flex; flex-direction: column;">
-      <mat-form-field class="example-full-width" [(ngModel)]="from_symbol" ngDefaultControl appearance="fill">
-        <mat-label>Enter the currency code</mat-label>
-        <input matInput>
-      </mat-form-field>
-      <button mat-flat-button color="primary" class="primary-btn btn-large" (click)="getCurrentExchangeRate()">
-        <span>
-          EXCHANGE RESULT
-        </span>
-      </button>
-
-      <div *ngIf="exchangeRate != null">
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-top: 2px solid #D9D9D9; padding-top: 30px;">
-          <div>
-            <p class="lg-bold">Exchange rate now</p>
-            <p class="medium">{{exchangeRate?.lastUpdatedAt}}</p>
-          </div>
-          <div>
-            <h1 class="text-brand-500 uppercase">{{exchangeRate?.fromSymbol}}/{{exchangeRate?.toSymbol}}</h1>
-          </div>
+<div class="full-screen">
+    <div class="flex flex-wrap justify-center items-center flex-col">
+        <h1 class="text-brand-500 my-8">
+            BRL EXCHANGE RATE
+        </h1>
+        <div class="w-full sm:w-auto flex flex-col">
+            <mat-form-field class="example-full-width" [(ngModel)]="from_symbol" ngDefaultControl appearance="fill">
+                <mat-label>Enter the currency code</mat-label>
+                <input matInput>
+            </mat-form-field>
+            <span class="text-red-500 -mt-5 font-medium" *ngIf="responseError">Currency code not found!</span>
+            <button mat-flat-button color="primary" class="mt-3 primary-btn m-auto w-full sm:w-80" [disabled]="this.from_symbol.trim().length === 0 || this.from_symbol === ''" (click)="getCurrentExchangeRate()">
+              <span>
+                EXCHANGE RESULT
+              </span>
+            </button>
+            <div *ngIf="exchangeRate != null">
+                <div class="flex justify-between items-center mt-8 border-solid border-gray-500" style="padding-top: 30px; border-top: 2px;">
+                    <div>
+                        <p class="lg-bold">Exchange rate now</p>
+                        <p class="medium">{{exchangeRate?.lastUpdatedAt | date:'dd/MM/yyyy - HH:mm'}}</p>
+                    </div>
+                    <div>
+                        <h1 class="text-brand-500 uppercase">{{exchangeRate?.fromSymbol}}/{{exchangeRate?.toSymbol}}</h1>
+                    </div>
+                </div>
+                <div class="bg-brand-100 flex justify-center items-center mt-4 py-4">
+                    <h1 class="text-brand-500 font-bold leading-10 m-0 big-number">
+                        {{exchangeRate?.exchangeRate | currency: 'R$'}}
+                    </h1>
+                </div>
+                <div class="block sm:hidden mt-8 border-brand-500 mb-4 border-solid" style="border-bottom: 2px;">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <p class="default-bold">LAST 30 DAYS</p>
+                        </div>
+                        <div class="flex cursor-pointer" (click)="getDailyExchangeRate()">
+                            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:plus'" *ngIf="!showLast30Days"></mat-icon>
+                            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:minus'" *ngIf="showLast30Days"></mat-icon>
+                        </div>
+                    </div>
+                    <div class="bg-gray-400 p-3 mt-4 pb-4 flex gap-4 flex-col" *ngIf="showLast30Days">
+                        <div class="p-4 bg-white" style="box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);" *ngFor="let exchange of exchangeRateDataSource.filteredData|slice:0:30; let i = index">
+                            <div>
+                                <p class="medium text-brand-500">
+                                    {{exchange.date | date:'dd/MM/yyyy'}}
+                                </p>
+                            </div>
+                            <div class="grid grid-cols-2">
+                                <div class="col-span-1 flex items-center gap-2">
+                                    <p class="card-header">Open: </p>
+                                    <p class="default-bold">R$ {{exchange.open}}</p>
+                                </div>
+                                <div class="col-span-1 flex items-center gap-2">
+                                    <p class="card-header">High: </p>
+                                    <p class="default-bold">R$ {{exchange.high}}</p>
+                                </div>
+                                <div class="col-span-1 flex items-center gap-2">
+                                    <p class="card-header">Close: </p>
+                                    <p class="default-bold">R$ {{exchange.close}}</p>
+                                </div>
+                                <div class="col-span-1 flex items-center gap-2">
+                                    <p class="card-header">Low: </p>
+                                    <p class="default-bold">R$ {{exchange.low}}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <p class="card-header">Close diff (%):</p>
+                                <p class="default-bold flex gap-2" [ngClass]="negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close) ? 'text-red-500' : 'text-green-500'">
+                                    {{calcPc(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)}}
+                                    <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:down'" *ngIf="negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)"></mat-icon>
+                                    <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:up'" *ngIf="!negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)"></mat-icon>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div
-          style="background-color: var(--primary-color-100); display: flex; justify-content: center; align-items: center; padding: 16px 0 ; margin-top: 15px;">
-          <h1 style="font-size: 32px;
-                line-height: 40px; font-weight: 700; color: var(--primary-color); margin: 0;">
-            {{exchangeRate?.exchangeRate}}
-          </h1>
-        </div>
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-top: 32px; border-bottom: 2px solid var(--primary-color); padding-bottom: 15px;">
-          <div>
-            <p class="default-bold">LAST 30 DAYS</p>
-          </div>
-          <div class="plus-container" (click)="getDailyExchangeRate()">
-            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:plus'" *ngIf="!showLast30Days"></mat-icon>
-            <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:minus'" *ngIf="showLast30Days"></mat-icon>
-          </div>
-        </div>
-      </div>
     </div>
-    <!-- <div class="bg-gray-400 p-3">
-        <div class="p-4">
-          <div>07/03/2022</div>
-          <div>
-            <div></div>
-            <div></div>
-          </div>
-          <div></div>
+    <div class="hidden sm:block mt-8 border-brand-500 mb-4 border-solid" style="border-bottom: 2px;" *ngIf="exchangeRate != null">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <p class="default-bold">LAST 30 DAYS</p>
+            </div>
+            <div class="flex cursor-pointer" (click)="getDailyExchangeRate()">
+                <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:plus'" *ngIf="!showLast30Days"></mat-icon>
+                <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:minus'" *ngIf="showLast30Days"></mat-icon>
+            </div>
         </div>
-    </div> -->
 
-  </div>
-  <div class="bg-gray-400 p-3 mt-4" *ngIf="showLast30Days">
-    <div class="overflow-x-auto">
-      <table class="w-full bg-transparent" mat-table [dataSource]="exchangeRateDataSource" [trackBy]="trackByFn"
-        #exchangeRateTable>
-        <ng-container matColumnDef="date">
-          <th mat-header-cell *matHeaderCellDef>
-            Date
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 font-medium text-sm text-secondary whitespace-nowrap">
-              {{exchange.date}}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="open">
-          <th mat-header-cell *matHeaderCellDef>
-            Open
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 whitespace-nowrap">
-              {{exchange.open}}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="close">
-          <th mat-header-cell *matHeaderCellDef>
-            Close
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 whitespace-nowrap">
-              {{exchange.close}}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="high">
-          <th mat-header-cell *matHeaderCellDef>
-            Higth
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 whitespace-nowrap">
-              {{exchange.high}}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="low">
-          <th mat-header-cell *matHeaderCellDef>
-            Low
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 whitespace-nowrap">
-              {{exchange.low}}
-            </span>
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="close">
-          <th mat-header-cell *matHeaderCellDef>
-            Close Dif
-          </th>
-          <td mat-cell *matCellDef="let exchange">
-            <span class="pr-6 whitespace-nowrap">
-              {{exchange.close}}
-            </span>
-          </td>
-        </ng-container>
-        <tr mat-header-row *matHeaderRowDef="exchangeRateTableColumns"></tr>
-        <tr class="order-row h-16" mat-row *matRowDef="let row; columns: exchangeRateTableColumns;"></tr>
-      </table>
+        <div class="bg-gray-400 p-3 mt-4 pb-4" *ngIf="showLast30Days">
+            <div class="overflow-x-auto">
+                <table class="w-full" mat-table [dataSource]="exchangeRateDataSource.filteredData|slice:0:30" [trackBy]="trackByFn" #exchangeRateTable>
+                    <ng-container matColumnDef="date">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Date
+                        </th>
+                        <td mat-cell *matCellDef="let exchange">
+                            <p class="medium text-brand-500">
+                                {{exchange.date | date:'dd/MM/yyyy'}}
+                            </p>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="open">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Open
+                        </th>
+                        <td mat-cell *matCellDef="let exchange">
+                            <p class="default-bold">
+                                R$ {{exchange.open}}
+                            </p>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="close">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Close
+                        </th>
+                        <td mat-cell *matCellDef="let exchange">
+                            <p class="default-bold">
+                                R$ {{exchange.close}}
+                            </p>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="high">
+                        <th mat-header-cell *matHeaderCellDef>
+                            High
+                        </th>
+                        <td mat-cell *matCellDef="let exchange">
+                            <p class="default-bold">
+                                R$ {{exchange.high}}
+                            </p>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="low">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Low
+                        </th>
+                        <td mat-cell *matCellDef="let exchange">
+                            <p class="default-bold">
+                                R$ {{exchange.low}}
+                            </p>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="close_dif">
+                        <th mat-header-cell *matHeaderCellDef>
+                            Close Dif
+                        </th>
+                        <td mat-cell *matCellDef="let exchange; let i = index">
+                            <p class="default-bold flex gap-2" [ngClass]="negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close) ? 'text-red-500' : 'text-green-500'">
+                                {{calcPc(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)}}
+                                <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:down'" *ngIf="negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)"></mat-icon>
+                                <mat-icon class="icon-size-5" [svgIcon]="'custom-icons:up'" *ngIf="!negativeValue(exchangeRateDataSource.filteredData[i+1]?.close , exchange.close)"></mat-icon>
+                            </p>
+                        </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="exchangeRateTableColumns"></tr>
+                    <tr class="order-row h-16" mat-row *matRowDef="let row; columns: exchangeRateTableColumns;"></tr>
+                </table>
+            </div>
+        </div>
     </div>
-  </div>
 </div>

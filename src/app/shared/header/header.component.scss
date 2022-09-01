@@ -1,16 +1,6 @@
 header {
     width: 100%;
-}
-
-.border {
-    flex: 1 1 auto;
-    margin-top: 1px;
-    border-top: 2px solid #D9D9D9;
-}
-
-.border-container {
-    display: flex;
-    align-items: center;
+    border-bottom: 2px;
 }
 
 .logo-container {

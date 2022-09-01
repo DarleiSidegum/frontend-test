@@ -11,9 +11,10 @@ import { take } from 'rxjs/operators';
 export class Home implements OnInit {
   showLast30Days = false;
   exchangeRateDataSource: MatTableDataSource<any> = new MatTableDataSource();
-  exchangeRateTableColumns: string[] = ['date', 'open', 'close', 'high', 'low', 'close'];
-  from_symbol: "";
-  exchangeRate: any;
+  exchangeRateTableColumns: string[] = ['date', 'open', 'close', 'high', 'low', 'close_dif'];
+  from_symbol = "";
+  exchangeRate: any = null;
+  responseError = false;
   constructor(
     private service: HomeService,
   ) {
@@ -34,11 +35,16 @@ export class Home implements OnInit {
 
   getCurrentExchangeRate() {
     this.exchangeRate = null;
+    this.responseError = false;
     this.service.getCurrentExchangeRate({ from_symbol: this.from_symbol, to_symbol: "BRL" }).pipe(
       take(1),
     ).subscribe(
       (response: any) => {
-        this.exchangeRate = response;
+        if(response.success){
+          this.exchangeRate = response;
+        }else{
+          this.responseError = true;
+        }
       },
       (e) => {
         console.error(e);
@@ -49,9 +55,10 @@ export class Home implements OnInit {
     if (!this.showLast30Days) {
       this.service.getDailyExchangeRate({ from_symbol: this.from_symbol, to_symbol: "BRL" }).pipe(take(1)).subscribe(
         (response: any) => {
-          console.log(response);
-          this.exchangeRateDataSource.data = response.data;
-          this.showLast30Days = true;
+          if(response.success){
+            this.exchangeRateDataSource.data = response.data;
+            this.showLast30Days = true;
+          }
         },
         (e) => {
           console.error(e);
@@ -61,4 +68,22 @@ export class Home implements OnInit {
       this.showLast30Days = !this.showLast30Days;
     }
   }
+
+  calcPc(n1,n2){
+    console.log(n1, n2);
+    if(n1>n2){
+      return (((n2 - n1) / n1 * 100).toLocaleString('fullwide', {maximumFractionDigits:2}) + "%");
+    }else{
+      return '+' + (((n2 - n1) / n1 * 100).toLocaleString('fullwide', {maximumFractionDigits:2}) + "%");
+    }
+  }
+
+  negativeValue(n1,n2){
+    if(n1>n2){
+      return true;
+    }else{
+      return false;
+    }
+  }
+
 }
